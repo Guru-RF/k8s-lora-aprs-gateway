@@ -1,0 +1,115 @@
+apiVersion: cloud.google.com/v1
+kind: BackendConfig
+metadata:
+  name: api
+spec:
+  timeoutSec: 300
+  connectionDraining:
+    drainingTimeoutSec: 300
+  logging:
+    enable: true
+    sampleRate: 1
+  sessionAffinity:
+    #affinityType: "GENERATED_COOKIE"
+    #affinityCookieTtlSec: 3600
+    affinityType: "CLIENT_IP"
+  cdn:
+    enabled: false
+    cachePolicy:
+      includeHost: true
+      includeProtocol: false
+  securityPolicy:
+    name: k8s
+  customRequestHeaders:
+    headers:
+    - "X-Client-Region:{client_region}"
+    - "X-Client-City:{client_city}"
+    - "X-Client-CityLatLong:{client_city_lat_long}"
+    - "X-Client-ClientRTT:{client_rtt_msec}"
+    - "X-Client-Origin:{origin_request_header}"
+    - "X-Client-CDNCacheStatus:{cdn_cache_status}"
+    - "X-Client-CDNCacheID:{cdn_cache_id}"
+    - "X-Client-SNIHostname:{tls_sni_hostname}"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: api
+  labels:
+    app: api
+  annotations:
+    cloud.google.com/backend-config: '{"ports": {
+      "3000": "api"
+    }}'
+spec:
+  sessionAffinity: ClientIP
+  type: NodePort
+  ports:
+    - port: 3000
+  selector:
+    app: api
+---
+apiVersion: networking.gke.io/v1beta1
+kind: FrontendConfig
+metadata:
+  name: api
+spec:
+  redirectToHttps:
+    enabled: false
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+  labels:
+    app: api
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+  selector:
+    matchLabels:
+      app: api
+  template:
+    metadata:
+      labels:
+        app: api
+    spec:
+      containers:
+        - image: gcr.io/customer-mol/lora-aprs-gateway/api-image
+          name: api
+          ports:
+            - containerPort: 3000
+              name: api
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 3000
+              scheme: HTTP
+            initialDelaySeconds: 30
+            timeoutSeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 3000
+              scheme: HTTP
+            initialDelaySeconds: 15
+            timeoutSeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          resources:
+            limits:
+              cpu: 250m
+              ephemeral-storage: 1Gi
+              memory: 512Mi
+            requests:
+              cpu: 250m
+              ephemeral-storage: 1Gi
+              memory: 512Mi 

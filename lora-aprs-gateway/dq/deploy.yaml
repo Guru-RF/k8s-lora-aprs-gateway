@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dq
+  labels:
+    app: dq
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+  selector:
+    matchLabels:
+      app: dq
+  template:
+    metadata:
+      labels:
+        app: dq
+    spec:
+      containers:
+        - image: gcr.io/customer-mol/lora-aprs-gateway/dq-image
+          name: dq
+          livenessProbe:
+            exec:
+              command:
+              - /app/healthcheck
+            failureThreshold: 3
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          resources:
+            limits:
+              cpu: 250m
+              ephemeral-storage: 512Mi
+              memory: 512Mi
+            requests:
+              cpu: 250m
+              ephemeral-storage: 512Mi
+              memory: 512Mi

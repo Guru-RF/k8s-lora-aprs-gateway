@@ -1,0 +1,15 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: api
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: lora-aprs-gateway-api-ip
+    kubernetes.io/ingress.class: "gce"
+  labels:
+    app: api
+spec:
+  defaultBackend:
+    service:
+      name: api
+      port:
+        number: 3000

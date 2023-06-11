@@ -1,0 +1,9 @@
+requires 'Config::YAML';
+requires 'Cpanel::JSON::XS';
+requires 'Geo::Coordinates::DecimalDegrees';
+requires 'Ham::APRS::FAP';
+requires 'Ham::APRS::IS';
+requires 'JSON::MaybeXS';
+requires 'Math::Round';
+requires 'Redis::Fast';
+requires 'perl', 'v5.10.0';

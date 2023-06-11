@@ -1,0 +1,13 @@
+requires 'Config::YAML';
+requires 'Mojo::Exception';
+requires 'Mojo::JSON';
+requires 'Mojo::JSON::XS';
+requires 'Mojo::Redis';
+requires 'Mojo::UserAgent';
+requires 'Mojolicious::Lite';
+requires 'Mojolicious::Plugin::Sentry';
+requires 'Protocol::Redis::XS';
+requires 'YAML::PP';
+requires 'YAML::XS';
+requires 'boolean';
+requires 'perl', 'v5.28.0';
